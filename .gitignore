@@ -1,4 +1,7 @@
 .idea/
+.DS_Store
+output/
+*.pkl
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

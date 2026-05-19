@@ -1,4 +1,12 @@
-''' Handling the data io '''
+"""
+Handling the data io
+python preprocess.py \                                                                                                                     ─╯
+    -lang_src de \
+    -lang_trg en \
+    -share_vocab \
+    -save_data m30k_deen_shr.pkl
+"""
+
 import os
 import argparse
 import logging
@@ -246,7 +254,7 @@ def main_wo_bpe():
     Usage: python preprocess.py -lang_src de -lang_trg en -save_data multi30k_de_en.pkl -share_vocab
     '''
 
-    spacy_support_langs = ['de', 'el', 'en', 'es', 'fr', 'it', 'lt', 'nb', 'nl', 'pt']
+    spacy_support_langs = ['en_core_web_sm', 'de_core_news_sm', 'de', 'el', 'en', 'es', 'fr', 'it', 'lt', 'nb', 'nl', 'pt']
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-lang_src', required=True, choices=spacy_support_langs)
@@ -267,8 +275,10 @@ def main_wo_bpe():
     assert not any([opt.data_src, opt.data_trg]) or all([opt.data_src, opt.data_trg])
     print(opt)
 
-    src_lang_model = spacy.load(opt.lang_src)
-    trg_lang_model = spacy.load(opt.lang_trg)
+    # src_lang_model = spacy.load(opt.lang_src)
+    # trg_lang_model = spacy.load(opt.lang_trg)
+    src_lang_model = spacy.load("de_core_news_sm")
+    trg_lang_model = spacy.load("en_core_web_sm")
 
     def tokenize_src(text):
         return [tok.text for tok in src_lang_model.tokenizer(text)]

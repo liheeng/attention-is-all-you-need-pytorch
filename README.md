@@ -1,3 +1,5 @@
+This project is forked from https://github.com/jadore801120/attention-is-all-you-need-pytorch and just for learning Transformer alogrithem. Read [README-henry.md](README-henry.md) to get more information.
+
 # Attention is all you need: A Pytorch Implementation
 
 This is a PyTorch implementation of the Transformer model in "[Attention is All You Need](https://arxiv.org/abs/1706.03762)" (Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin, arxiv, 2017). 
