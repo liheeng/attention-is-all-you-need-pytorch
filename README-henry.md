@@ -2,9 +2,9 @@
 
 * Please run train_save_point_v1.py to train, this file is based on train.py and support to save model and checkpoint after each epoch if there is better accuracy score, and load saved model and checkpoint to avoid training from zero-position after relaunch the program.
 
-* Before you start train, you should read the original README.md to get base background knowledge, and then read Records_of_Running_History-henry.md to get know how to propare training data and run training with Python 3.11.
+* Before you start training, you should read the original README.md to get base background knowledge, and then read Records_of_Running_History-henry.md to get know how to prepare training data and run training with Python 3.11.
 
-* The Code_Learning-henry.md shows the detail steps of Transformer alogrithem based on this code.
+* The Code_Learning-henry.md explains detail code-level steps of Transformer alogrithem.
 
 # Known Issues
 
