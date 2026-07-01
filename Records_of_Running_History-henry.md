@@ -32,61 +32,69 @@ Repository:
 
 ---
 
-# Recommended setup (works in 2026)
+### Recommended setup (works in 2026)
 
-## 1. Create a fresh environment
+#### 1. Create a fresh environment
 
-### Linux / macOS
+##### Linux / macOS
 
+```bash
+python3.11 -m venv venv
+source venv/bin/activate
 ```
-python3.11 -m venv venvsource venv/bin/activate
-```
 
-### Windows
+##### Windows
 
-```
-py -3.11 -m venv venvvenv\Scripts\activate
+```bash
+py -3.11 -m venv venv
+venv\Scripts\activate
 ```
 
 ---
 
-# 2. Install modern dependencies
+### 2. Install modern dependencies
 
 Do NOT use the repo's original `requirements.txt`.
 
 Install this instead:
 
-```
-pip install torch torchvision torchaudiopip install spacy==3.7.5pip install torchtext==0.6.0pip install dill tqdm numpy
+```bash
+pip install torch torchvision torchaudio
+pip install spacy==3.7.5
+pip install torchtext==0.6.0
+pip install dill tqdm numpy
 ```
 
 Then download language models:
 
-```
-python -m spacy download en_core_web_smpython -m spacy download de_core_news_sm
+```bash
+python -m spacy download en_core_web_sm
+python -m spacy download de_core_news_sm
 ```
 
 ---
 
-# 3. Fix the spaCy code
+### 3. Fix the spaCy code
 
 The repo uses old spaCy names:
 
 OLD:
 
-```
-spacy.load('en')spacy.load('de')
+```python
+spacy.load('en')
+spacy.load('de')
 ```
 
 Modern spaCy requires:
 
-```
-spacy.load("en_core_web_sm")spacy.load("de_core_news_sm")
+```python
+spacy.load("en_core_web_sm")
+spacy.load("de_core_news_sm")
 ```
 
 Search the repo for:
 
-```
+```python
 spacy.load(
 ```
 
@@ -94,7 +102,7 @@ and replace accordingly.
 
 ---
 
-# 4. Fix torchtext compatibility
+### 4. Fix torchtext compatibility
 
 This repo depends on the legacy torchtext API (`Field`, `BucketIterator`, etc.).
 
@@ -102,11 +110,11 @@ Modern torchtext removed many of these APIs.
 
 You have 2 options:
 
-## Option A (easiest)
+#### Option A (easiest)
 
 Use:
 
-```
+```bash
 pip install torchtext==0.6.0
 ```
 
@@ -114,7 +122,7 @@ This still contains the old APIs and works with Python 3.11.
 
 ---
 
-## Option B (harder but future-proof)
+#### Option B (harder but future-proof)
 
 Rewrite preprocessing using:
 
@@ -126,32 +134,47 @@ Not worth it unless you're modernizing the project fully.
 
 ---
 
-# 5. Run preprocessing
+### 5. Run preprocessing
 
-```
-python preprocess.py \    -lang_src de \    -lang_trg en \    -share_vocab \    -save_data m30k_deen_shr.pkl
+```bash
+python preprocess.py \
+    -lang_src de \
+    -lang_trg en \
+    -share_vocab \
+    -save_data m30k_deen_shr.pkl
 ```
 
 If you get a tokenizer error, edit tokenizer loading.
 
 Find something like:
 
-```
-spacy_de = spacy.load('de')spacy_en = spacy.load('en')
+```python
+spacy_de = spacy.load('de')
+spacy_en = spacy.load('en')
 ```
 
 Replace with:
 
-```
-spacy_de = spacy.load("de_core_news_sm")spacy_en = spacy.load("en_core_web_sm")
+```python
+spacy_de = spacy.load("de_core_news_sm")
+spacy_en = spacy.load("en_core_web_sm")
 ```
 
 ---
 
-# 6. Train
+### 6. Train
 
-```
-python train.py \    -data_pkl m30k_deen_shr.pkl \    -log m30k_deen_shr \    -embs_share_weight \    -proj_share_weight \    -label_smoothing \    -output_dir output \    -b 256 \    -warmup 128000 \    -epoch 10
+```bash
+python train.py \
+    -data_pkl m30k_deen_shr.pkl \
+    -log m30k_deen_shr \
+    -embs_share_weight \
+    -proj_share_weight \
+    -label_smoothing \
+    -output_dir output \
+    -b 256 \
+    -warmup 128000 \
+    -epoch 10
 ```
 
 For small GPUs:
@@ -168,23 +191,23 @@ or
 
 ---
 
-# Common modern errors
+### Common modern errors
 
-## `ModuleNotFoundError: torchtext.data`
+#### `ModuleNotFoundError: torchtext.data`
 
 Install legacy torchtext:
 
-```
+```bash
 pip install torchtext==0.6.0
 ```
 
 ---
 
-## `OSError: Can't find model 'en'`
+#### `OSError: Can't find model 'en'`
 
 Use:
 
-```
+```bash
 python -m spacy download en_core_web_sm
 ```
 
@@ -192,7 +215,7 @@ and update `spacy.load()` calls.
 
 ---
 
-## CUDA mismatch
+#### CUDA mismatch
 
 Install PyTorch matching your CUDA version from:
 
@@ -200,7 +223,7 @@ Install PyTorch matching your CUDA version from:
 
 ---
 
-# Better alternative (recommended)
+### Better alternative (recommended)
 
 That repo is historically important, but outdated.
 
@@ -214,7 +237,7 @@ They work cleanly with Python 3.11/3.12 and modern PyTorch.
 
 ---
 
-# Minimal known-working versions
+### Minimal known-working versions
 
 | Package   | Version      |
 | --------- | ------------ |
@@ -236,7 +259,7 @@ This is the expected spaCy v3 breakage.
 
 The repo still uses old spaCy v2 shortcuts:
 
-```
+```python
 spacy.load('de')spacy.load('en')
 ```
 
@@ -244,57 +267,76 @@ Modern spaCy requires full model names.
 
 ---
 
-# Fix
+### Fix
 
 Open:
 
-```
+```bash
 preprocess.py
 ```
 
 Find this section (around line ~270):
 
-```
-src_lang_model = spacy.load(opt.lang_src)trg_lang_model = spacy.load(opt.lang_trg)
+```python
+src_lang_model = spacy.load(opt.lang_src)
+trg_lang_model = spacy.load(opt.lang_trg)
 ```
 
 Replace with:
 
-```
-if opt.lang_src == "de":    src_lang_model = spacy.load("de_core_news_sm")elif opt.lang_src == "en":    src_lang_model = spacy.load("en_core_web_sm")else:    src_lang_model = spacy.blank(opt.lang_src)if opt.lang_trg == "de":    trg_lang_model = spacy.load("de_core_news_sm")elif opt.lang_trg == "en":    trg_lang_model = spacy.load("en_core_web_sm")else:    trg_lang_model = spacy.blank(opt.lang_trg)
+```python
+if opt.lang_src == "de":
+    src_lang_model = spacy.load("de_core_news_sm")
+elif opt.lang_src == "en":
+    src_lang_model = spacy.load("en_core_web_sm")
+else:
+    src_lang_model = spacy.blank(opt.lang_src)
+
+if opt.lang_trg == "de":
+    trg_lang_model = spacy.load("de_core_news_sm")
+elif opt.lang_trg == "en":
+    trg_lang_model = spacy.load("en_core_web_sm")
+else:
+    trg_lang_model = spacy.blank(opt.lang_trg)
 ```
 
 ---
 
-# Then install the models
+### Then install the models
 
 Run:
 
-```
-python -m spacy download de_core_news_smpython -m spacy download en_core_web_sm
-```
-
----
-
-# Then rerun
-
-```
-python preprocess.py \    -lang_src de \    -lang_trg en \    -share_vocab \    -save_data m30k_deen_shr.pkl
+```bash
+python -m spacy download de_core_news_sm
+python -m spacy download en_core_web_sm
 ```
 
 ---
 
-# Faster minimal fix
+### Then rerun
+
+```bash
+python preprocess.py \
+    -lang_src de \
+    -lang_trg en \
+    -share_vocab \
+    -save_data m30k_deen_shr.pkl
+```
+
+---
+
+### Faster minimal fix
 
 If you only care about German→English, the shortest patch is:
 
-```
-src_lang_model = spacy.load("de_core_news_sm")trg_lang_model = spacy.load("en_core_web_sm")
+```python
+src_lang_model = spacy.load("de_core_news_sm")
+trg_lang_model = spacy.load("en_core_web_sm")
 ```
 
 ---
 
-# Another issue you may hit next
+### Another issue you may hit next
 
 Modern `torchtext` sometimes breaks pickle serialization.
 
@@ -307,29 +349,29 @@ If you later get errors involving:
 
 install:
 
-```
+```bash
 pip install dill
 ```
 
 or downgrade torchtext further:
 
-```
+```bash
 pip install torchtext==0.6.0
 ```
 
 ---
 
-# Verify models installed
+### Verify models installed
 
 Run:
 
-```
+```bash
 python -m spacy validate
 ```
 
 You should see something like:
 
-```
+```log
 ✔ Loaded compatibility table================= Installed pipeline packages =================NAME               SPACY            VERSIONde_core_news_sm    >=3.7.0,<3.8.0   3.7.0en_core_web_sm     >=3.7.0,<3.8.0   3.7.1
 ```
 
@@ -353,8 +395,9 @@ NOT spaCy model names.
 
 So this command is wrong:
 
-```
--lang_src de_core_news_sm \-lang_trg en_core_web_sm
+```bash
+-lang_src de_core_news_sm \
+-lang_trg en_core_web_sm
 ```
 
 because torchtext tries to load files like:
@@ -367,49 +410,56 @@ which do not exist.
 
 ---
 
-# Correct approach
+### Correct approach
 
 Keep dataset language codes:
 
-```
--lang_src de \-lang_trg en
+```bash
+-lang_src de \
+-lang_trg en
 ```
 
 BUT modify the spaCy loading code inside `preprocess.py`.
 
 ---
 
-# Do this
+### Do this
 
-## 1. Edit `preprocess.py`
+#### 1. Edit `preprocess.py`
 
 Find:
 
-```
-src_lang_model = spacy.load(opt.lang_src)trg_lang_model = spacy.load(opt.lang_trg)
+```python
+src_lang_model = spacy.load(opt.lang_src)
+trg_lang_model = spacy.load(opt.lang_trg)
 ```
 
 Replace with:
 
-```
-src_lang_model = spacy.load("de_core_news_sm")trg_lang_model = spacy.load("en_core_web_sm")
-```
-
----
-
-# 2. Run the ORIGINAL command
-
-```
-python preprocess.py \    -lang_src de \    -lang_trg en \    -share_vocab \    -save_data m30k_deen_shr.pkl
+```python
+src_lang_model = spacy.load("de_core_news_sm")
+trg_lang_model = spacy.load("en_core_web_sm")
 ```
 
 ---
 
-# Why this happens
+### 2. Run the ORIGINAL command
+
+```bash
+python preprocess.py \
+    -lang_src de \
+    -lang_trg en \
+    -share_vocab \
+    -save_data m30k_deen_shr.pkl
+```
+
+---
+
+### Why this happens
 
 The script uses:
 
-```
+```python
 exts = ('.' + opt.lang_src, '.' + opt.lang_trg)
 ```
 
@@ -424,13 +474,13 @@ Changing them to spaCy model names breaks dataset loading.
 
 ---
 
-# You may hit another Multi30k issue next
+### You may hit another Multi30k issue next
 
 Modern torchtext sometimes fails downloading Multi30k because old URLs died.
 
 If that happens, the cleanest fix is:
 
-```
+```bash
 mkdir -p .data/multi30k
 ```
 
@@ -470,24 +520,29 @@ You need to manually place the dataset files.
 
 ---
 
-# Fix Multi30k dataset manually
+### Fix Multi30k dataset manually
 
-## 1. Create dataset directory
+#### 1. Create dataset directory
 
 From the repo root:
 
-```
+```bash
 mkdir -p .data/multi30k
 ```
 
 ---
 
-# 2. Download the files
+### 2. Download the files
 
 Get these 6 files:
 
 ```
-train.detrain.enval.deval.entest.detest.en
+train.de
+train.en
+val.de
+val.en
+test.de
+test.en
 ```
 
 from:
@@ -500,42 +555,57 @@ A direct raw source that still works:
 
 ---
 
-# 3. Put them here
+### 3. Put them here
 
 Your structure should become:
 
-```
+```bash
 attention-is-all-you-need-pytorch/├── preprocess.py├── train.py└── .data/    └── multi30k/        ├── train.de        ├── train.en        ├── val.de        ├── val.en        ├── test.de        └── test.en
 ```
 
 ---
 
-# 4. Run preprocess again
+### 4. Run preprocess again
 
-```
-python preprocess.py \    -lang_src de \    -lang_trg en \    -share_vocab \    -save_data m30k_deen_shr.pkl
+```bash
+python preprocess.py \
+    -lang_src de \
+    -lang_trg en \
+    -share_vocab \
+    -save_data m30k_deen_shr.pkl
 ```
 
 ---
 
-# If GitHub downloads HTML pages instead of text
+### If GitHub downloads HTML pages instead of text
 
 Use terminal downloads instead.
 
 Example:
 
-```
-cd .data/multi30kcurl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/train.decurl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/train.encurl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/val.decurl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/val.encurl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/test.decurl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/test.en
+```bash
+cd .data/multi30k
+curl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/train.de
+curl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/train.en
+curl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/val.de
+curl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/val.en
+curl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/test.de
+curl -O https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/test.en
 ```
 
 ---
 
-# After preprocessing succeeds
+### After preprocessing succeeds
 
 Run training:
 
-```
-python train.py \    -data_pkl m30k_deen_shr.pkl \    -log transformer \    -output_dir output \    -b 32 \    -epoch 10
+```bash
+python train.py \
+    -data_pkl m30k_deen_shr.pkl \
+    -log transformer \
+    -output_dir output \
+    -b 32 \
+    -epoch 10
 ```
 
 Use:
@@ -546,8 +616,14 @@ Use:
 
 Example:
 
-```
-python train.py \    -data_pkl m30k_deen_shr.pkl \    -log transformer \    -output_dir output \    -b 16 \    -epoch 10 \    -no_cuda
+```bash
+python train.py \
+    -data_pkl m30k_deen_shr.pkl \
+    -log transformer \
+    -output_dir output \
+    -b 16 \
+    -epoch 10 \
+    -no_cuda
 ```
 
 ## Session 5
@@ -568,27 +644,36 @@ Just remove it.
 
 Run:
 
-```
-python train.py \    -data_pkl m30k_deen_shr.pkl \    -output_dir output \    -b 32 \    -epoch 10
+```bash
+python train.py \
+    -data_pkl m30k_deen_shr.pkl \
+    -output_dir output \
+    -b 32 \
+    -epoch 10
 ```
 
 ---
 
-# For Apple Silicon / macOS
+### For Apple Silicon / macOS
 
 If CUDA-related issues appear, use:
 
-```
-python train.py \    -data_pkl m30k_deen_shr.pkl \    -output_dir output \    -b 16 \    -epoch 10 \    -no_cuda
+```bash
+python train.py \
+    -data_pkl m30k_deen_shr.pkl \
+    -output_dir output \
+    -b 16 \
+    -epoch 10 \
+    -no_cuda
 ```
 
 ---
 
-# You may hit this next
+### You may hit this next
 
 Older code often contains:
 
-```
+```python
 tensor.cuda()
 ```
 
@@ -598,19 +683,19 @@ If training crashes with CUDA/device errors on Mac, patch `train.py`.
 
 Search for:
 
-```
+```python
 .cuda()
 ```
 
 and replace with:
 
-```
+```python
 .to(device)
 ```
 
 where `device` is:
 
-```
+```python
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 ```
 
@@ -618,23 +703,24 @@ for Apple Silicon.
 
 ---
 
-# Better Apple Silicon patch (recommended)
+### Better Apple Silicon patch (recommended)
 
 Near the top of `train.py`, after imports, add:
 
-```
-import torchdevice = torch.device(    "mps" if torch.backends.mps.is_available()    else "cuda" if torch.cuda.is_available()    else "cpu")
+```python
+import torch
+device = torch.device(    "mps" if torch.backends.mps.is_available()    else "cuda" if torch.cuda.is_available()    else "cpu")
 ```
 
 Then replace all:
 
-```
+```python
 .cuda()
 ```
 
 with:
 
-```
+```python
 .to(device)
 ```
 
@@ -646,12 +732,13 @@ This modernizes the repo for:
 
 ---
 
-# If training starts successfully
+### If training starts successfully
 
 You should eventually see logs like:
 
-```
-[Info] Training performance will be written to file.[ Epoch 0 ]
+```log
+[Info] Training performance will be written to file.
+[ Epoch 0 ]
 ```
 
 and loss/perplexity updates.
@@ -659,7 +746,15 @@ and loss/perplexity updates.
 ## Session 6
 
 ``` log
-[ Epoch 1 ] - (Training) ppl: 108.58289, accuracy: 25.647 %, lr: 0.00032, elapse: 4.592 min - (Validation) ppl: 86.92886, accuracy: 27.458 %, lr: 0.00032, elapse: 0.046 min - [Info] The checkpoint file has been updated. [ Epoch 2 ] - (Training) ppl: 63.96428, accuracy: 30.835 %, lr: 0.00048, elapse: 4.596 min - (Validation) ppl: 49.75328, accuracy: 32.985 %, lr: 0.00048, elapse: 0.046 min - [Info] The checkpoint file has been updated. [ Epoch 3 ] - (Training) ppl: 46.49185, accuracy: 33.331 %, lr: 0.00063, elapse: 4.603 min - (Validation) ppl: 37.98506, accuracy: 34.730 %, lr: 0.00063, elapse: 0.046 min - [Info] The checkpoint file has been updated. [ Epoch 4 ] - (Training) ppl: 42.08174, accuracy: 34.025 %, lr: 0.00079, elapse: 4.591 min - (Validation) ppl: 41.34377, accuracy: 33.954 %, lr: 0.00079, elapse: 0.045 min [ Epoch 5 ] - (Training) ppl: 74.87738, accuracy: 27.032 %, lr: 0.00095, elapse: 4.602 min - (Validation) ppl: 834.95421, accuracy: 11.988 %, lr: 0.00095, elapse: 0.047 min [ Epoch 6 ] - (Training) ppl: 173.58378, accuracy: 14.415 %, lr: 0.00111, elapse: 4.603 min - (Validation) ppl: 3014.37072, accuracy: 11.988 %, lr: 0.00111, elapse: 0.043 min [ Epoch 7 ] - (Training) ppl: 168.29413, accuracy: 14.759 %, lr: 0.00127, elapse: 4.620 min - (Validation) ppl: 2950.48175, accuracy: 11.988 %, lr: 0.00127, elapse: 0.046 min [ Epoch 8 ] - (Training) ppl: 165.60762, accuracy: 14.996 %, lr: 0.00138, elapse: 4.602 min - (Validation) ppl: 2115.13691, accuracy: 11.988 %, lr: 0.00138, elapse: 0.047 min [ Epoch 9 ] - (Training) ppl: 163.57107, accuracy: 15.176 %, lr: 0.00131, elapse: 4.614 min - (Validation) ppl: 2254.47724, accuracy: 11.988 %, lr: 0.00131, elapse: 0.046 min 为什么训练效果反而在下降
+[ Epoch 1 ] - (Training) ppl: 108.58289, accuracy: 25.647 %, lr: 0.00032, elapse: 4.592 min - (Validation) ppl: 86.92886, accuracy: 27.458 %, lr: 0.00032, elapse: 0.046 min - [Info] The checkpoint file has been updated.
+[ Epoch 2 ] - (Training) ppl: 63.96428, accuracy: 30.835 %, lr: 0.00048, elapse: 4.596 min - (Validation) ppl: 49.75328, accuracy: 32.985 %, lr: 0.00048, elapse: 0.046 min - [Info] The checkpoint file has been updated.
+[ Epoch 3 ] - (Training) ppl: 46.49185, accuracy: 33.331 %, lr: 0.00063, elapse: 4.603 min - (Validation) ppl: 37.98506, accuracy: 34.730 %, lr: 0.00063, elapse: 0.046 min - [Info] The checkpoint file has been updated.
+[ Epoch 4 ] - (Training) ppl: 42.08174, accuracy: 34.025 %, lr: 0.00079, elapse: 4.591 min - (Validation) ppl: 41.34377, accuracy: 33.954 %, lr: 0.00079, elapse: 0.045 min
+[ Epoch 5 ] - (Training) ppl: 74.87738, accuracy: 27.032 %, lr: 0.00095, elapse: 4.602 min - (Validation) ppl: 834.95421, accuracy: 11.988 %, lr: 0.00095, elapse: 0.047 min
+[ Epoch 6 ] - (Training) ppl: 173.58378, accuracy: 14.415 %, lr: 0.00111, elapse: 4.603 min - (Validation) ppl: 3014.37072, accuracy: 11.988 %, lr: 0.00111, elapse: 0.043 min
+[ Epoch 7 ] - (Training) ppl: 168.29413, accuracy: 14.759 %, lr: 0.00127, elapse: 4.620 min - (Validation) ppl: 2950.48175, accuracy: 11.988 %, lr: 0.00127, elapse: 0.046 min
+[ Epoch 8 ] - (Training) ppl: 165.60762, accuracy: 14.996 %, lr: 0.00138, elapse: 4.602 min - (Validation) ppl: 2115.13691, accuracy: 11.988 %, lr: 0.00138, elapse: 0.047 min
+[ Epoch 9 ] - (Training) ppl: 163.57107, accuracy: 15.176 %, lr: 0.00131, elapse: 4.614 min - (Validation) ppl: 2254.47724, accuracy: 11.988 %, lr: 0.00131, elapse: 0.046 min 为什么训练效果反而在下降
 ```
 
 这是典型的：
@@ -677,7 +772,8 @@ learning rate 爆了
 你这个日志非常经典：
 
 ```
-epoch 1~4 正常下降epoch 5 开始突然爆炸
+epoch 1~4 正常下降
+epoch 5 开始突然爆炸
 ```
 
 看这里：
@@ -694,7 +790,7 @@ epoch 1~4 正常下降epoch 5 开始突然爆炸
 
 ---
 
-# 直接原因
+### 直接原因
 
 你还在：
 
@@ -716,7 +812,7 @@ batch 太小
 
 ---
 
-# 这是原论文的坑
+### 这是原论文的坑
 
 Attention Is All You Need 原始配置：
 
@@ -750,19 +846,20 @@ warmup_steps=4000
 
 ---
 
-# 你的 train.py 其实已经警告了
+### 你的 train.py 其实已经警告了
 
 你代码里：
 
 ```
-if opt.batch_size < 2048 and opt.n_warmup_steps <= 4000:    print('[Warning] The warmup steps may be not enough.')
+if opt.batch_size < 2048 and opt.n_warmup_steps <= 4000:
+    print('[Warning] The warmup steps may be not enough.')
 ```
 
 它已经提醒你了。
 
 ---
 
-# 为什么 epoch 4 后突然爆炸
+### 为什么 epoch 4 后突然爆炸
 
 因为：
 
@@ -779,12 +876,15 @@ Adam 更新不稳定
 然后：
 
 ```
-attention logits 爆炸↓softmax overflow↓loss 爆炸↓模型崩掉
+attention logits 爆炸
+↓ softmax overflow
+↓ loss 爆炸
+↓ 模型崩掉
 ```
 
 ---
 
-# 典型症状
+### 典型症状
 
 你现在：
 
@@ -804,11 +904,11 @@ optimizer divergence
 
 ---
 
-# 最简单修复（立刻有效）
+### 最简单修复（立刻有效）
 
 ---
 
-# 方法 1（最推荐）
+### 方法 1（最推荐）
 
 把 warmup 提高。
 
@@ -826,7 +926,7 @@ optimizer divergence
 
 ---
 
-# 原因
+### 原因
 
 小 batch 时：
 
@@ -836,7 +936,7 @@ optimizer divergence
 
 ---
 
-# 方法 2（非常有效）
+### 方法 2（非常有效）
 
 降低 lr multiplier。
 
@@ -860,7 +960,7 @@ optimizer divergence
 
 ---
 
-# 方法 3（最稳）
+### 方法 3（最稳）
 
 直接 gradient clipping。
 
@@ -872,23 +972,30 @@ loss.backward()
 
 后面加入：
 
-```
-torch.nn.utils.clip_grad_norm_(    model.parameters(),    1.0)
+```python
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 ```
 
 ---
 
-# 推荐完整修复
+### 推荐完整修复
 
 你现在直接：
 
-```
-python train.py \  -data_pkl m30k_deen_shr.pkl \  -output_dir output \  -b 32 \  -epoch 30 \  -warmup 20000 \  -lr_mul 0.5 \  -label_smoothing
+```bash
+python train.py \
+    -data_pkl m30k_deen_shr.pkl \
+    -output_dir output \
+    -b 32 \
+    -epoch 30 \
+    -warmup 20000 \
+    -lr_mul 0.5 \
+    -label_smoothing
 ```
 
 ---
 
-# 你会看到：
+### 你会看到：
 
 ```
 ppl 持续下降
@@ -902,7 +1009,7 @@ epoch 5 爆炸
 
 ---
 
-# 更深层原因（Transformer 老问题）
+### 更深层原因（Transformer 老问题）
 
 原始 Transformer：
 
@@ -934,7 +1041,7 @@ LayerNorm↓attention↓residual
 
 ---
 
-# 你的 repo 是：
+### 你的 repo 是：
 
 ```
 2019 老 Transformer
@@ -948,7 +1055,7 @@ LayerNorm↓attention↓residual
 
 ---
 
-# 真正现代解决方案
+### 真正现代解决方案
 
 如果你继续现代化：
 
@@ -956,7 +1063,7 @@ LayerNorm↓attention↓residual
 
 ---
 
-# 1. Pre-LN
+### 1. Pre-LN
 
 替换：
 
@@ -972,43 +1079,43 @@ x = x + attn(self.norm(x))
 
 ---
 
-# 2. RMSNorm
+### 2. RMSNorm
 
 比 LayerNorm 更稳定。
 
 ---
 
-# 3. bf16
+### 3. bf16
 
 Apple Silicon 很适合。
 
 ---
 
-# 4. Flash Attention
+### 4. Flash Attention
 
 attention 数值更稳定。
 
 ---
 
-# 5. cosine lr schedule
+### 5. cosine lr schedule
 
 比 old warmup 更稳定。
 
 ---
 
-# 6. AdamW
+### 6. AdamW
 
 不是 Adam。
 
 ---
 
-# 7. gradient clipping
+### 7. gradient clipping
 
 现代训练几乎必备。
 
 ---
 
-# 你现在的日志其实说明：
+### 你现在的日志其实说明：
 
 ```
 模型是能学到东西的
@@ -1063,7 +1170,7 @@ Gradient clipping（梯度裁剪）是：
 
 ---
 
-# 为什么 Transformer 特别需要它
+### 为什么 Transformer 特别需要它
 
 Transformer 很容易出现：
 
@@ -1091,7 +1198,7 @@ epoch 5 突然 ppl 爆炸
 
 ---
 
-# 不 clipping 会发生什么
+### 不 clipping 会发生什么
 
 例如某层梯度：
 
@@ -1120,7 +1227,7 @@ weight -= lr * grad
 
 ---
 
-# clipping 做什么
+### clipping 做什么
 
 例如：
 
@@ -1136,7 +1243,7 @@ clip_grad_norm_(..., 1.0)
 
 ---
 
-# 举例
+### 举例
 
 原梯度：
 
@@ -1166,7 +1273,7 @@ g = g / 12
 
 ---
 
-# 数学上
+### 数学上
 
 如果：
 
@@ -1183,16 +1290,16 @@ g←g⋅c∥g∥g \leftarrow g \cdot \frac{c}{\|g\|}g←g⋅∥g∥c​
 
 ---
 
-# 最常见 clipping
+### 最常见 clipping
 
 ---
 
-# 1. norm clipping（最常用）
+### 1. norm clipping（最常用）
 
 PyTorch：
 
-```
-torch.nn.utils.clip_grad_norm_(    model.parameters(),    1.0)
+```python
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 ```
 
 意思：
@@ -1205,7 +1312,7 @@ torch.nn.utils.clip_grad_norm_(    model.parameters(),    1.0)
 
 ---
 
-# 2. value clipping
+### 2. value clipping
 
 例如：
 
@@ -1223,7 +1330,7 @@ clip_grad_value_(    model.parameters(),    1.0)
 
 ---
 
-# 为什么 norm clipping 更好
+### 为什么 norm clipping 更好
 
 因为：
 
@@ -1235,7 +1342,7 @@ clip_grad_value_(    model.parameters(),    1.0)
 
 ---
 
-# Transformer 里几乎是标配
+### Transformer 里几乎是标配
 
 现代模型基本都会：
 
@@ -1249,7 +1356,7 @@ clip_grad_value_(    model.parameters(),    1.0)
 
 ---
 
-# 你现在应该加在哪里
+### 你现在应该加在哪里
 
 在：
 
@@ -1261,23 +1368,26 @@ loss.backward()
 
 ---
 
-# 你的 train.py
+### 你的 train.py
 
 改：
 
 ```
-loss.backward()optimizer.step_and_update_lr()
+loss.backward()
+optimizer.step_and_update_lr()
 ```
 
 为：
 
-```
-loss.backward()torch.nn.utils.clip_grad_norm_(    model.parameters(),    1.0)optimizer.step_and_update_lr()
+```python
+loss.backward()
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+optimizer.step_and_update_lr()
 ```
 
 ---
 
-# 为什么 1.0 最常见
+### 为什么 1.0 最常见
 
 经验上：
 
@@ -1296,7 +1406,7 @@ Transformer 通常：
 
 ---
 
-# 你这个项目最推荐
+### 你这个项目最推荐
 
 ```
 clip_grad_norm_(..., 1.0)
@@ -1305,14 +1415,15 @@ clip_grad_norm_(..., 1.0)
 配合：
 
 ```
--lr_mul 0.5-warmup 20000
+-lr_mul 0.5
+-warmup 20000
 ```
 
 基本就稳了。
 
 ---
 
-# 为什么现代 LLM 更稳定
+### 为什么现代 LLM 更稳定
 
 因为它们已经：
 
@@ -1328,7 +1439,7 @@ clip_grad_norm_(..., 1.0)
 
 ---
 
-# 你的 repo 属于：
+### 你的 repo 属于：
 
 ```
 第一代 Transformer
@@ -1342,14 +1453,15 @@ clip_grad_norm_(..., 1.0)
 
 加 clipping 会明显改善。
 
-没有归一化和残差很容易爆是吧
+### 没有归一化和残差很容易爆是吧
 
 对。
 
 Transformer 如果：
 
 ```
-没有 Residual没有 Normalization
+没有 Residual
+没有 Normalization
 ```
 
 会：
@@ -1362,7 +1474,7 @@ Transformer 如果：
 
 ---
 
-# 为什么会爆
+### 为什么会爆
 
 深层网络本质上：
 
@@ -1384,7 +1496,7 @@ f8(f7(f6(...f1(x))))f_8(f_7(f_6(...f_1(x))))f8​(f7​(f6​(...f1​(x))))
 
 ---
 
-# 没有 residual 时
+### 没有 residual 时
 
 梯度传播：
 
@@ -1396,7 +1508,7 @@ f8(f7(f6(...f1(x))))f_8(f_7(f_6(...f_1(x))))f8​(f7​(f6​(...f1​(x))))
 
 ---
 
-# 1. 梯度消失
+### 1. 梯度消失
 
 0.950≈0.0050.9^{50} \approx 0.0050.950≈0.005
 
@@ -1406,7 +1518,7 @@ f8(f7(f6(...f1(x))))f_8(f_7(f_6(...f_1(x))))f8​(f7​(f6​(...f1​(x))))
 
 ---
 
-# 2. 梯度爆炸
+### 2. 梯度爆炸
 
 1.150≈1171.1^{50} \approx 1171.150≈117
 
@@ -1416,7 +1528,7 @@ f8(f7(f6(...f1(x))))f_8(f_7(f_6(...f_1(x))))f8​(f7​(f6​(...f1​(x))))
 
 ---
 
-# Residual 的作用
+### Residual 的作用
 
 Transformer：
 
@@ -1434,7 +1546,7 @@ x = x + attention(x)
 
 ---
 
-# 为什么
+### 为什么
 
 因为它提供：
 
@@ -1452,7 +1564,7 @@ identity path
 
 ---
 
-# 数学上非常关键
+### 数学上非常关键
 
 没有 residual：
 
@@ -1464,7 +1576,7 @@ xl+1=xl+f(xl)x_{l+1}=x_l+f(x_l)xl+1​=xl​+f(xl​)
 
 ---
 
-# 后者稳定得多
+### 后者稳定得多
 
 因为：
 
@@ -1488,7 +1600,7 @@ xl+1=xl+f(xl)x_{l+1}=x_l+f(x_l)xl+1​=xl​+f(xl​)
 
 ---
 
-# Normalization 为什么也重要
+### Normalization 为什么也重要
 
 attention 输出可能：
 
@@ -1499,7 +1611,9 @@ scale 飘掉
 例如：
 
 ```
-layer1 variance = 1layer5 variance = 200layer20 variance = 50000
+layer1 variance = 1
+layer5 variance = 200
+layer20 variance = 50000
 ```
 
 最后：
@@ -1512,7 +1626,7 @@ softmax overflow
 
 ---
 
-# LayerNorm / RMSNorm 做什么
+### LayerNorm / RMSNorm 做什么
 
 本质：
 
@@ -1522,7 +1636,7 @@ softmax overflow
 
 ---
 
-# LayerNorm
+### LayerNorm
 
 近似：
 
@@ -1530,7 +1644,7 @@ x←x−μσx \leftarrow \frac{x-\mu}{\sigma}x←σx−μ​
 
 ---
 
-# RMSNorm
+### RMSNorm
 
 现代 LLM 更喜欢：
 
@@ -1544,7 +1658,7 @@ x←x1n∑xi2x \leftarrow \frac{x}{\sqrt{\frac{1}{n}\sum x_i^2}}x←n1​∑xi2�
 
 ---
 
-# 为什么 Attention 特别容易爆
+### 为什么 Attention 特别容易爆
 
 因为：
 
@@ -1580,7 +1694,7 @@ softmax：
 
 ---
 
-# 所以 Transformer 稳定训练依赖：
+### 所以 Transformer 稳定训练依赖：
 
 |组件|作用|
 |---|---|
@@ -1592,7 +1706,7 @@ softmax：
 
 ---
 
-# 为什么论文里有：
+### 为什么论文里有：
 
 QKTdk\frac{QK^T}{\sqrt{d_k}}dk​​QKT​
 
@@ -1616,7 +1730,7 @@ QK^T 非常容易巨大
 
 ---
 
-# 现代 Transformer 更稳定
+### 现代 Transformer 更稳定
 
 现代模型已经：
 
@@ -1631,7 +1745,7 @@ QK^T 非常容易巨大
 
 ---
 
-# 你那个 repo 属于：
+### 你那个 repo 属于：
 
 ```
 第一代 Transformer
@@ -1649,7 +1763,10 @@ QK^T 非常容易巨大
 ## Session 7
 
 ```log
-🔥 [ Epoch 50 ] - (Training) ppl: 22.70679, accuracy: 51.811 %, lr: 0.00015, elapse: 0.799 min - (Validation) ppl: 15.06064, accuracy: 48.338 %, lr: 0.00015, elapse: 0.006 min 🔥 [ Epoch 51 ] - (Training) ppl: 22.30286, accuracy: 52.036 %, lr: 0.00015, elapse: 0.787 min - (Validation) ppl: 15.09177, accuracy: 48.082 %, lr: 0.00015, elapse: 0.006 min 🔥 [ Epoch 52 ] - (Training) ppl: 21.97096, accuracy: 52.326 %, lr: 0.00015, elapse: 0.781 min - (Validation) ppl: 15.15825, accuracy: 48.241 %, lr: 0.00015, elapse: 0.006 min 🔥 [ Epoch 53 ] - (Training) ppl: 21.59712, accuracy: 52.587 %, lr: 0.00015, elapse: 0.784 min - (Validation) ppl: 15.03274, accuracy: 48.227 %, lr: 0.00015, elapse: 0.006 min 运行多个epoch后，validation的accuracy上的非常慢，一直超不过50%
+🔥 [ Epoch 50 ] - (Training) ppl: 22.70679, accuracy: 51.811 %, lr: 0.00015, elapse: 0.799 min - (Validation) ppl: 15.06064, accuracy: 48.338 %, lr: 0.00015, elapse: 0.006 min
+🔥 [ Epoch 51 ] - (Training) ppl: 22.30286, accuracy: 52.036 %, lr: 0.00015, elapse: 0.787 min - (Validation) ppl: 15.09177, accuracy: 48.082 %, lr: 0.00015, elapse: 0.006 min
+🔥 [ Epoch 52 ] - (Training) ppl: 21.97096, accuracy: 52.326 %, lr: 0.00015, elapse: 0.781 min - (Validation) ppl: 15.15825, accuracy: 48.241 %, lr: 0.00015, elapse: 0.006 min
+🔥 [ Epoch 53 ] - (Training) ppl: 21.59712, accuracy: 52.587 %, lr: 0.00015, elapse: 0.784 min - (Validation) ppl: 15.03274, accuracy: 48.227 %, lr: 0.00015, elapse: 0.006 min 运行多个epoch后，validation的accuracy上的非常慢，一直超不过50%
 ```
 
 
@@ -1675,7 +1792,7 @@ Multi30k 太小
 
 ---
 
-# 其实你现在效果已经不错了
+### 其实你现在效果已经不错了
 
 你现在：
 
@@ -1695,7 +1812,7 @@ Multi30k 太小
 
 ---
 
-# 为什么 validation 卡住
+### 为什么 validation 卡住
 
 因为：
 
@@ -1709,7 +1826,7 @@ token-level accuracy
 
 ---
 
-# 例如：
+### 例如：
 
 真实：
 
@@ -1733,7 +1850,7 @@ accuracy 会认为错
 
 ---
 
-# token accuracy 本身就不是翻译核心指标
+### token accuracy 本身就不是翻译核心指标
 
 真正翻译指标是：
 
@@ -1752,7 +1869,7 @@ token accuracy
 
 ---
 
-# 为什么 50% 很常见
+### 为什么 50% 很常见
 
 翻译是：
 
@@ -1773,7 +1890,7 @@ token 不一样。
 
 ---
 
-# 更深层原因
+### 更深层原因
 
 Multi30k：
 
@@ -1803,7 +1920,7 @@ Multi30k：
 
 ---
 
-# 你现在的迹象
+### 你现在的迹象
 
 看：
 
@@ -1824,7 +1941,7 @@ plateau
 
 ---
 
-# 为什么 train 还能涨
+### 为什么 train 还能涨
 
 因为：
 
@@ -1839,7 +1956,7 @@ plateau
 
 ---
 
-# 这是 overfitting 前期
+### 这是 overfitting 前期
 
 典型表现：
 
@@ -1849,7 +1966,7 @@ plateau
 
 ---
 
-# 为什么 Transformer 特别容易这样
+### 为什么 Transformer 特别容易这样
 
 因为：
 
@@ -1860,7 +1977,7 @@ plateau
 
 ---
 
-# 真正限制你的东西
+### 真正限制你的东西
 
 不是：
 
@@ -1876,11 +1993,11 @@ plateau
 
 ---
 
-# 真正提升方法
+### 真正提升方法
 
 ---
 
-# 1. 更大数据集（最重要）
+### 1. 更大数据集（最重要）
 
 例如：
 
@@ -1898,7 +2015,7 @@ plateau
 
 ---
 
-# 2. label smoothing
+### 2. label smoothing
 
 非常重要。
 
@@ -1917,7 +2034,7 @@ plateau
 
 ---
 
-# 3. dropout
+### 3. dropout
 
 现在：
 
@@ -1933,7 +2050,7 @@ dropout=0.1
 
 ---
 
-# 4. 更小模型
+### 4. 更小模型
 
 Multi30k 不适合：
 
@@ -1945,7 +2062,7 @@ Multi30k 不适合：
 
 ---
 
-# 推荐：
+### 推荐：
 
 ```
 -n_layers 3-d_model 256-n_head 4
@@ -1955,7 +2072,7 @@ Multi30k 不适合：
 
 ---
 
-# 5. BLEU evaluation（重点）
+### 5. BLEU evaluation（重点）
 
 你现在最该做的是：
 
@@ -1971,7 +2088,7 @@ BLEU
 
 ---
 
-# 因为翻译任务：
+### 因为翻译任务：
 
 ```
 BLEU 才是真指标
@@ -1979,7 +2096,7 @@ BLEU 才是真指标
 
 ---
 
-# 例如
+### 例如
 
 accuracy：
 
@@ -1997,7 +2114,7 @@ accuracy：
 
 ---
 
-# 现代 LLM 甚至不用 accuracy
+### 现代 LLM 甚至不用 accuracy
 
 因为：
 
@@ -2007,7 +2124,7 @@ token accuracy 不反映生成质量
 
 ---
 
-# 你现在已经说明：
+### 你现在已经说明：
 
 ✅ model 在学习  
 ✅ attention 正常  
@@ -2020,41 +2137,41 @@ token accuracy 不反映生成质量
 
 ---
 
-# 你现在真正应该升级的是：
+### 你现在真正应该升级的是：
 
 ---
 
-# 1. BLEU metric
+### 1. BLEU metric
 
 不要只看 accuracy。
 
 ---
 
-# 2. inference/generate.py
+### 2. inference/generate.py
 
 真正翻译句子。
 
 ---
 
-# 3. beam search
+### 3. beam search
 
 greedy decoding 很弱。
 
 ---
 
-# 4. bigger dataset
+### 4. bigger dataset
 
 这是提升最大来源。
 
 ---
 
-# 5. SentencePiece tokenizer
+### 5. SentencePiece tokenizer
 
 会比老 torchtext tokenizer 好很多。
 
 ---
 
-# 其实你现在已经：
+### 其实你现在已经：
 
 ```
 成功训练了一个真正的 Transformer
