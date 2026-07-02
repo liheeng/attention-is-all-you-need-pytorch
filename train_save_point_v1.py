@@ -1,7 +1,7 @@
 """
 This script handles the training process.
 
- python train.py \                                                                                                                                                       ─╯
+ python train_save_point_v1.py \                                                                                                                                                      ─╯
   -data_pkl m30k_deen_shr.pkl \
   -output_dir output \
   -b 32 \
